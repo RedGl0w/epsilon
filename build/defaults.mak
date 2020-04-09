@@ -18,11 +18,6 @@ else
 SFLAGS += -Os
 endif
 
-ifeq ($(ASAN),1)
-SFLAGS += -fsanitize=address
-LDFLAGS += -fsanitize=address
-endif
-
 # Flags - Header search path
 SFLAGS += -Ilib -I.
 
