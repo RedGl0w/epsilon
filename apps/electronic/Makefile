@@ -12,7 +12,15 @@ electronic_law = $(addprefix apps/electronic/,\
 
 $(foreach i,${electronic_law},$(eval include $(i)/Makefile))
 
+electronic_shared = $(addprefix apps/electronic/shared/, \
+  battery_view.cpp \
+  resistor_view.cpp \
+  cable_view.cpp \
+  current_view.cpp \
+)
+
 apps_src += $(app_electronic_src)
+apps_src += $(electronic_shared)
 
 i18n_files += $(addprefix apps/electronic/,\
   base.en.i18n\

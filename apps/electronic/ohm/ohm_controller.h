@@ -4,6 +4,11 @@
 #include <escher.h>
 #include "../electronic_law.h"
 
+#include "../shared/battery_view.h"
+#include "../shared/resistor_view.h"
+#include "../shared/cable_view.h"
+#include "../shared/current_view.h"
+
 namespace Electronic {
 
 class ohmLawController : public electronicLaw, public ViewController {
@@ -23,6 +28,15 @@ class ohmLawController : public electronicLaw, public ViewController {
       View * subviewAtIndex(int index) override;
     private:
       void layoutSubviews(bool force = false) override;
+      BatteryView m_batteryView;
+      CableView m_topRightCable;
+      CableView m_rightCable;
+      CurrentView m_currentView;
+      CableView m_bottomRightCable;
+      ResistorView m_resistorView;
+      CableView m_bottomLeftCable;
+      CableView m_leftCable;
+      CableView m_topLeftCable;
   };
   private:
       ohmLawView m_ohmLawView;
