@@ -19,6 +19,7 @@ var Module;
 
   Epsilon(Module);
 
+
   document.querySelectorAll('#keyboard span').forEach(function(span){
     function eventHandler(keyHandler) {
       return function(ev) {
@@ -62,4 +63,97 @@ function screenshot() {
   link.download = 'screenshot.png';
   link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
   link.click();
+}
+
+const notif = document.getElementById("notif");
+
+function createNotif(message, isError){
+  let child = document.createElement("div")
+  child.classList.add(isError ? "error" : "success");
+  child.classList.add("fadein")
+  child.innerHTML = message;
+  notif.appendChild(child);
+  setTimeout(() => {
+    child.classList.remove("fadein");
+    child.classList.add("fadeout");
+    setTimeout(() => {
+      notif.removeChild(child);
+    }, 500)
+  }, 5000)
+}
+
+function sendScript(evt) {
+  for (var i = 0; i < evt.target.files.length; i++) {
+    const file = evt.target.files[i]
+    //FIXME Scenario : test.py.py
+    const name = file.name.split(".py")[0] + ".py";
+    const nameptr  = Module.allocate(Module.intArrayFromString(name), 'i8', 0);
+    let reader = new FileReader();
+    reader.readAsText(file);
+    reader.onload = function() {
+      var content  = Module.allocate(Module.intArrayFromString("\001" + reader.result), 'i8', 0);
+      const ErrorStauts = Module._IonStorageAddScript(nameptr, content);
+      switch(ErrorStauts){
+        case 1 :{
+          createNotif(`${name} couldn't be added : this name is already taken`, true);
+          break;
+        }
+        case 2 :{
+          createNotif(`${name} couldn't be added : this name is not compliant`, true);
+          break;
+        }
+        case 3 :{
+          createNotif(`${name} couldn't be added : there isn't enough space`, true);
+          break;
+        }
+        default:{
+          createNotif(name + " has succesfully been added !", false)
+        }
+      }
+      Module._free(nameptr);
+      Module._free(content) 
+    };
+  }
+}
+
+function downloadScriptAtIndex(index){
+  var a = document.createElement("a");
+  a.style.display = "none";
+  const name = Module.UTF8ToString(Module._IonStorageScriptAtIndexName(index));
+  const content = Module.UTF8ToString(Module._IonStorageScriptAtIndexCotent(index)).substr(1);
+  var file = new Blob([content], {type: "text/plain;charset=utf-8"});
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  a.click()
+}
+
+const download = document.getElementById("download");
+const downloadList = document.getElementById("downloadList");
+
+function openDownload(){
+  download.classList.add("show");
+  const length = Module._IonStorageNumberOfScripts();
+  for(var i = 0; i<length; i++){
+    const name = Module.UTF8ToString(Module._IonStorageScriptAtIndexName(i));
+    let tr = document.createElement("tr")
+    let nameth = document.createElement("th")
+    nameth.classList.add("name")
+    nameth.innerHTML = name;
+    tr.appendChild(nameth);
+    let downloadth = document.createElement("th");
+    let a = document.createElement("a");
+    a.id = "download-"+i;
+    a.innerHTML = "Download file"
+    a.onclick = function(e){
+      downloadScriptAtIndex(a.id.split("download-")[1])
+    }
+    downloadth.appendChild(a);
+    tr.appendChild(downloadth);
+    downloadList.appendChild(tr);
+  }
+}
+
+function closeDownload(){
+  download.classList.remove("show");
+  downloadList.innerHTML = "";
 }
