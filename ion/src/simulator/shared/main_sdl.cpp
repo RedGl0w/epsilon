@@ -14,13 +14,19 @@
 #include <SDL.h>
 #include <vector>
 #include <string>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
 
 static bool argument_screen_only = false;
 static bool argument_fullscreen = false;
 static bool argument_unresizable = false;
-static bool argument_volatile = false;
+static bool argument_volatile = true; // Disable volatile
 static char* pref_path = nullptr;
 static char* file_buffer = nullptr;
+static char* file_name = nullptr;
 
 static void loadPython(std::vector<const char *>* arguments);
 static void savePython();
@@ -35,7 +41,7 @@ void print_help(char * program_name) {
   printf("  -f, --fullscreen          Starts the emulator in fullscreen\n");
   printf("  -s, --screen-only         Disable the keyboard.\n");
   printf("  -v, --volatile            Disable saving and loading python scripts from file.\n");
-  printf("  -u, --unresizable         Disable resizing the window.\n");
+  //printf("  -u, --unresizable         Disable resizing the window.\n");
   printf("  -h, --help                Show this help menu.\n");
 }
 
@@ -47,7 +53,23 @@ int event_filter(void* userdata, SDL_Event* e) {
   return 1;
 }
 
-
+char* unconstchar(const char* s) {
+    if(!s)
+      return NULL;
+    int i;
+    char* res = NULL;
+    res = (char*) malloc(strlen(s)+1);
+    if(!res){
+        fprintf(stderr, "Memory Allocation Failed! Exiting...\n");
+        exit(EXIT_FAILURE);
+    } else{
+        for (i = 0; s[i] != '\0'; i++) {
+            res[i] = s[i];
+        }
+        res[i] = '\0';
+        return res;
+    }
+}
 
 int main(int argc, char * argv[]) {
   std::vector<const char *> arguments(argv, argv + argc);
@@ -64,6 +86,26 @@ int main(int argc, char * argv[]) {
       argument_unresizable = true;
     } else if(strcmp(argv[i], "-v")==0 || strcmp(argv[i], "--volatile")==0) {
       argument_volatile = true;
+    }
+    if (*argv[i] != '-' && (i!=0 && *argv[i-1] != '-')) {
+      file_name = unconstchar(argv[i]);
+      FILE * file;
+      file = fopen (argv[i],"r");
+      if (file==NULL) {
+        fprintf(stderr, "Couldn't load file. Exiting...\n");
+        fclose (file);
+        exit(EXIT_FAILURE);
+      }
+      const int MAX_SIZE = 32000;
+      char buf[MAX_SIZE];
+      memset(&buf, 0, MAX_SIZE);
+      buf[0] = '\001';
+      uint32_t i = 1;
+      while (fgets(buf+i, sizeof(buf), file)) {
+        i = strlen(buf);
+      }
+      Ion::Storage::sharedStorage()->createRecordWithFullName(file_name, &buf, 1 + strlen(buf));
+      fclose (file);
     }
   }
 
@@ -96,6 +138,9 @@ int main(int argc, char * argv[]) {
 #endif
   
   Ion::Simulator::Main::quit();
+
+  if (file_name != nullptr)
+    free(file_name);
 
   if (file_buffer != nullptr)
     SDL_free(file_buffer);

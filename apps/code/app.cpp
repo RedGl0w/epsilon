@@ -24,7 +24,7 @@ const Image * App::Descriptor::icon() {
 
 App::Snapshot::Snapshot() :
 #if EPSILON_GETOPT
-  m_lockOnConsole(false),
+  m_lockOnConsole(true),
   m_hasBeenWiped(false),
 #endif
   m_scriptStore()
