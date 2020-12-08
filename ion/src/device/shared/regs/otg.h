@@ -120,40 +120,40 @@ public:
       Size8 = 3
     };
     using Register32::Register32;
-    void setMPSIZ(MPSIZ s) volatile { setBitRange(1, 0, (uint8_t)s); }
-    REGS_BOOL_FIELD(STALL, 21);
-    REGS_FIELD(TXFNUM, uint8_t, 25, 22);
-    REGS_BOOL_FIELD(CNAK, 26);
-    REGS_BOOL_FIELD(SNAK, 27);
-    REGS_BOOL_FIELD(EPENA, 31);
+    void setMPSIZ(MPSIZ s) volatile { setBitRange(1, 0, (uint8_t)s); } // Maximum packet size
+    REGS_BOOL_FIELD(STALL, 21); // STALL handshake
+    REGS_FIELD(TXFNUM, uint8_t, 25, 22); // Tx FIFO number
+    REGS_BOOL_FIELD(CNAK, 26); // Clear NAK
+    REGS_BOOL_FIELD(SNAK, 27); // Set NAK
+    REGS_BOOL_FIELD(EPENA, 31); // Endpoint enable
   };
 
   class DOEPCTL0 : public Register32 {
   public:
-    REGS_BOOL_FIELD(CNAK, 26);
-    REGS_BOOL_FIELD(SNAK, 27);
-    REGS_BOOL_FIELD(EPENA, 31);
+    REGS_BOOL_FIELD(CNAK, 26); // Clear NAK
+    REGS_BOOL_FIELD(SNAK, 27); // Set NAK
+    REGS_BOOL_FIELD(EPENA, 31); // Endpoint enable
   };
 
   class DIEPINT : public Register32 {
   public:
-    REGS_BOOL_FIELD(XFRC, 0);
-    REGS_BOOL_FIELD(INEPNE, 6);
+    REGS_BOOL_FIELD(XFRC, 0); // Transfer completed interrupt
+    REGS_BOOL_FIELD(INEPNE, 6); // IN endpoint NAK effective
   };
 
   class DIEPTSIZ0 : public Register32 {
   public:
     using Register32::Register32;
-    REGS_FIELD(XFRSIZ, uint8_t, 6, 0);
-    REGS_FIELD(PKTCNT, uint8_t, 20, 19);
+    REGS_FIELD(XFRSIZ, uint8_t, 6, 0); // Packet count
+    REGS_FIELD(PKTCNT, uint8_t, 20, 19); // Transfer size
   };
 
   class DOEPTSIZ0 : public Register32 {
   public:
     using Register32::Register32;
-    REGS_FIELD(XFRSIZ, uint8_t, 6, 0);
-    REGS_BOOL_FIELD(PKTCNT, 19);
-    REGS_FIELD(STUPCNT, uint8_t, 30, 29);
+    REGS_FIELD(XFRSIZ, uint8_t, 6, 0); // Transfer size
+    REGS_BOOL_FIELD(PKTCNT, 19); // Packet count
+    REGS_FIELD(STUPCNT, uint8_t, 30, 29); // SETUP packet count
   };
 
   class PCGCCTL : public Register32 {
@@ -179,13 +179,13 @@ public:
   REGS_REGISTER_AT(DCTL, 0x804);
   REGS_REGISTER_AT(DIEPMSK, 0x810);
   REGS_REGISTER_AT(DAINTMSK, 0x81C);
-  REGS_REGISTER_AT(DIEPCTL0, 0x900);
-  REGS_REGISTER_AT(DIEPTSIZ0, 0x910);
-  REGS_REGISTER_AT(DOEPCTL0, 0xB00);
-  REGS_REGISTER_AT(DOEPTSIZ0, 0xB10);
+  REGS_REGISTER_AT(DIEPCTL0, 0x900); // OTG device control IN endpoint 0 control register
+  REGS_REGISTER_AT(DIEPTSIZ0, 0x910); //  OTG device IN endpoint 0 transfer size register
+  REGS_REGISTER_AT(DOEPCTL0, 0xB00); // OTG device control OUT endpoint 0 control register
+  REGS_REGISTER_AT(DOEPTSIZ0, 0xB10); // OTG device OUT endpoint 0 transfer size register
   REGS_REGISTER_AT(PCGCCTL, 0xE00);
   REGS_REGISTER_AT(DFIFO0, 0x1000);
-  constexpr volatile DIEPINT * DIEPINT(int i) const {
+  constexpr volatile DIEPINT * DIEPINT(int i) const { // OTG device IN endpoint x interrupt register (OTG_DIEPINTx)
     return (class DIEPINT *)(Base() + 0x908 + i*0x20);
   }
 private:
