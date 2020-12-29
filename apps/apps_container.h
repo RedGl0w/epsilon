@@ -53,10 +53,10 @@ public:
   // Ion::StorageDelegate
   void storageDidChangeForRecord(const Ion::Storage::Record record) override;
   void storageIsFull() override;
+  Window * window() override;
 protected:
   Home::App::Snapshot * homeAppSnapshot() { return &m_homeSnapshot; }
 private:
-  Window * window() override;
   int numberOfContainerTimers() override;
   Timer * containerTimerAtIndex(int i) override;
   bool processEvent(Ion::Events::Event event);
