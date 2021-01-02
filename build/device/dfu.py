@@ -161,7 +161,7 @@ def mass_erase():
     """Performs a MASS erase (i.e. erases the entire device."""
     # Send DNLOAD with first byte=0x41
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE,
-                        "\x41", __TIMEOUT)
+                        b"\x41", __TIMEOUT)
 
     # Execute last command
     if get_status() != __DFU_STATE_DFU_DOWNLOAD_BUSY:
