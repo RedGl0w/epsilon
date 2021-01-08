@@ -1,3 +1,15 @@
+## Poincare REPL
+
+This repo contains a simple Poincare REPL.
+To compile it on simulator, use the following command :
+```
+make PLATFORM=simulator epsilon.headless.bin
+```
+
+Use `exit` to exit it
+
+## Original epsilon README
+
 <img src="docs/epsilon.svg?sanitize=true" alt="NumWorks Epsilon logo" height="70" >
 
 [![Build Status](https://github.com/numworks/epsilon/workflows/Continuous%20integration/badge.svg)](https://github.com/numworks/epsilon/actions?workflow=Continuous+integration)

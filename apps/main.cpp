@@ -1,9 +1,12 @@
 #include "apps_container.h"
 #include "global_preferences.h"
 #include <poincare/init.h>
+#include <poincare/exception_checkpoint.h>
+#include <malloc.h>
+#include "shared/poincare_helpers.h"
 
-#define DUMMY_MAIN 0
-#if DUMMY_MAIN
+#define MAIN 0 // 0 for dummy main, 1 for classical main, 2 for poincare REPL
+#if MAIN==2
 
 void ion_main(int argc, const char * const argv[]) {
   // Initialize the backlight
@@ -16,7 +19,8 @@ void ion_main(int argc, const char * const argv[]) {
   }
 }
 
-#else
+#elif MAIN==1
+
 
 void ion_main(int argc, const char * const argv[]) {
   // Initialize Poincare::TreePool::sharedPool
@@ -61,6 +65,43 @@ void ion_main(int argc, const char * const argv[]) {
   }
 #endif
   AppsContainer::sharedAppsContainer()->run();
+}
+
+#else
+
+using namespace Poincare;
+
+void ion_main(int argc, const char * const argv[]) {
+  Ion::Console::writeLine("Simple poincare REPL");
+  Poincare::Init();
+  Poincare::ExceptionCheckpoint ecp;
+  char * string = (char*) malloc(2048); // Max input length
+  char * buffer = (char*) malloc(2048);
+  if (ExceptionRun(ecp)) {
+    do {
+      Ion::Console::writeLine("> ", false);
+      Ion::Console::readLine(string, 2048);
+      Expression outputs[] = {Expression(), Expression()};
+      Context * sharedCtxt = AppsContainer::sharedAppsContainer()->globalContext();
+      Expression e = Expression::Parse(string, sharedCtxt);
+      if (e.isUninitialized()) {
+        Ion::Console::writeLine("Parsing error");
+        continue;
+      }
+      Shared::PoincareHelpers::ParseAndSimplifyAndApproximate(string, &(outputs[0]), &(outputs[1]), sharedCtxt, Poincare::ExpressionNode::SymbolicComputation::ReplaceAllSymbolsWithDefinitionsOrUndefined);
+      outputs[0].serialize(buffer, 2048);
+      Ion::Console::writeLine("Simplify : ", false);
+      Ion::Console::writeLine(buffer);
+      outputs[1].serialize(buffer, 2048);
+      Ion::Console::writeLine("Approximate : ", false);
+      Ion::Console::writeLine(buffer);
+    } while(strcmp(string, "exit"));
+  } else {
+    Poincare::Tidy();
+    Ion::Console::writeLine("Poincare exception. Exiting...");
+  }
+  free(string);
+  free(buffer);
 }
 
 #endif
